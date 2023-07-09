@@ -29,7 +29,6 @@ const RecommendedTrips = async () => {
                 <TripItem key={trip.id} trip={trip}/>
             ))}
         </div>
-
     </div>
   );
 };
