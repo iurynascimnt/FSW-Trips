@@ -8,33 +8,80 @@ import React from "react";
 import { Controller, useForm } from "react-hook-form";
 
 interface TripReservationProps {
-  tripStartDate: Date
-  tripEndDate: Date
-  maxGuests: number
-  pricePerDay: number
+  tripId: string;
+  tripStartDate: Date;
+  tripEndDate: Date;
+  maxGuests: number;
+  pricePerDay: number;
 }
 
 interface TripReservationForm {
   guests: number;
-  startDate: Date | null
-  endDate: Date | null
+  startDate: Date | null;
+  endDate: Date | null;
 }
 
-const TripReservation = ({ maxGuests, tripStartDate, tripEndDate, pricePerDay }: TripReservationProps) => {
+const TripReservation = ({
+  tripId,
+  maxGuests,
+  tripStartDate,
+  tripEndDate,
+  pricePerDay,
+}: TripReservationProps) => {
   const {
     register,
     handleSubmit,
     formState: { errors },
     control,
-    watch
+    watch,
+    setError,
   } = useForm<TripReservationForm>();
 
-  const onSubmit = (data: any) => {
-    console.log(data);
+  const onSubmit = async (data: TripReservationForm) => {
+    const response = await fetch("/api/trips/check", {
+      method: "POST",
+      body: Buffer.from(
+        JSON.stringify({
+          startDate: data.startDate,
+          endDate: data.endDate,
+          tripId,
+        })
+      ),
+    });
+
+    const res = await response.json();
+
+    if (res?.error?.code === "TRIP_ALREADY_RESERVED") {
+      setError("startDate", {
+        type: "manual",
+        message: "Esta data já está reservada.",
+      });
+
+      setError("endDate", {
+        type: "manual",
+        message: "Está data já está reservada.",
+      });
+    }
+
+    if (res?.error?.code === "INVALID_START_DATE") {
+      setError("startDate", {
+        type: "manual",
+        message: "Data inválida.",
+      });
+    }
+
+    if (res?.error?.code === "INVALID_END_DATE") {
+      setError("endDate", {
+        type: "manual",
+        message: "Data inválida.",
+      });
+    }
+
+    console.log({res})
   };
 
-  const startDate = watch('startDate')
-  const endDate = watch('endDate')
+  const startDate = watch("startDate");
+  const endDate = watch("endDate");
 
   return (
     <div className="flex flex-col px-5">
@@ -99,10 +146,12 @@ const TripReservation = ({ maxGuests, tripStartDate, tripEndDate, pricePerDay }:
 
       <div className="flex justify-between mt-3">
         <p className="font-medium text-sm text-primaryDarker">Total: </p>
-        <p className="font-medium text-sm text-primaryDarker"> {
-          startDate && endDate ? `R$${differenceInDays(endDate, startDate) * pricePerDay}` ?? 1 : "R$0"
-
-        } </p>
+        <p className="font-medium text-sm text-primaryDarker">
+          {" "}
+          {startDate && endDate
+            ? `R$${differenceInDays(endDate, startDate) * pricePerDay}` ?? 1
+            : "R$0"}{" "}
+        </p>
       </div>
 
       <div className="pb-10 border-b border-b-grayLighter w-full">

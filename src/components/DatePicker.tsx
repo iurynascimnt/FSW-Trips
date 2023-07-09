@@ -28,6 +28,7 @@ function DatePicker(
   return (
     <div className="flex flex-col w-full">
       <_DatePicker
+        dateFormat='dd/MM/yyyy'
         locale="pt-BR"
         wrapperClassName="w-full"
         className={datePickerClassName}
