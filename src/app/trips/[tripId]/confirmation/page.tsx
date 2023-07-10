@@ -2,21 +2,22 @@
 
 import { Trip } from "@prisma/client";
 import { format } from "date-fns";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import ReactCountryFlag from "react-country-flag";
-import ptBR from 'date-fns/locale/pt-BR'
+import ptBR from "date-fns/locale/pt-BR";
+import Image from "next/image";
 import Button from "@/components/Button";
-
-
-
-
-
+import ReactCountryFlag from "react-country-flag";
 
 const TripConfirmation = ({ params }: { params: { tripId: string } }) => {
   const [trip, setTrip] = useState<Trip | null>();
   const [totalPrice, setTotalPrice] = useState<number>(0);
+
+  const router = useRouter();
+
+  const { status } = useSession();
 
   const searchParams = useSearchParams();
 
@@ -36,14 +37,18 @@ const TripConfirmation = ({ params }: { params: { tripId: string } }) => {
       setTotalPrice(totalPrice);
     };
 
+    if (status === "authenticated") {
+        router.push('/')
+    }
+
     fetchTrip();
-  }, []);
+  }, [status]);
 
   if (!trip) return null;
 
-  const startDate = new Date(searchParams.get('startDate') as string)
-  const endDate = new Date(searchParams.get('endDate') as string)
-  const guests = searchParams.get('guests')
+  const startDate = new Date(searchParams.get("startDate") as string);
+  const endDate = new Date(searchParams.get("endDate") as string);
+  const guests = searchParams.get("guests");
 
   return (
     <div className="container mx-auto p-5">
@@ -95,7 +100,6 @@ const TripConfirmation = ({ params }: { params: { tripId: string } }) => {
 
         <h3 className="font-semibold mt-5">Hóspedes</h3>
         <p>{guests} hóspedes</p>
-
 
         <Button className="mt-5">Finalizar Compra</Button>
       </div>
