@@ -32,25 +32,38 @@ const TripConfirmation = ({ params }: { params: { tripId: string } }) => {
         }),
       });
 
-      const res = await response.json()
+      const res = await response.json();
 
-      if (res?.error?.code === 'TRIP_ALREADY_RESERVED') {
-            router.push('/')
+      if (res?.error?.code === "TRIP_ALREADY_RESERVED") {
+        router.push("/");
       }
-
 
       setTrip(res.trip);
       setTotalPrice(res.totalPrice);
     };
 
     if (status === "unauthenticated") {
-        router.push('/')
+      router.push("/");
     }
 
     fetchTrip();
   }, [status, searchParams, params, router]);
 
   if (!trip) return null;
+
+  const handleBuyClick = async () => {
+    await fetch("http://localhost:3000/api/trips/reservation", {
+      method: "POST",
+      body: Buffer.from(
+        JSON.stringify({
+          tripId: params.tripId,
+          startDate: searchParams.get("startDate"),
+          endDate: searchParams.get("endDate"),
+          guests: searchParams.get("guests"),
+        })
+      ),
+    });
+  };
 
   const startDate = new Date(searchParams.get("startDate") as string);
   const endDate = new Date(searchParams.get("endDate") as string);
